@@ -1,6 +1,9 @@
 ======
-segtok (fork of https://github.com/fnl/segtok, aimed to improve the sentence segmentation in German)
+segtok
 ======
+
+(fork of https://github.com/fnl/segtok, aimed to improve the sentence segmentation in German)
+
 
 .. image:: https://img.shields.io/pypi/v/segtok.svg
     :target: https://pypi.python.org/pypi/segtok
