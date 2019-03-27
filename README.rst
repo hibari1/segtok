@@ -1,5 +1,5 @@
 ======
-segtok
+segtok (fork of https://github.com/fnl/segtok, aimed to improve the sentence segmentation in German)
 ======
 
 .. image:: https://img.shields.io/pypi/v/segtok.svg
@@ -30,7 +30,8 @@ To use this package, you minimally should have the latest version of Python 2.7 
 The package is expected to work with both Python 2.7 and 3.3+, tested against those latest Python branches, as well as Python 3.3.
 The easiest way to get ``segtok`` installed is using ``pip`` or any other package manager that works with PyPI::
 
-    pip3 install segtok
+    pip install git+https://github.com/hibari1/segtok.git
+
 
 *Important*: If you are on a Linux machine and have problems installing the ``regex`` dependency of ``segtok``, make sure you have the ``python-dev`` and/or ``python3-dev`` packages installed to get the necessary headers to compile the package.
 
@@ -105,7 +106,7 @@ History
 
 - **1.5.7** enhancement: split sentences even if the terminal is followed by invalid characters (contributed by @gkucsko)
 - **1.5.6** fixed a bug that would lead to joining lines in single-line mode (#11, reported by @yucongo)
-- **1.5.5** support for middle name initials ("Lester P. Pearson") 
+- **1.5.5** support for middle name initials ("Lester P. Pearson")
 - **1.5.4** also support for European-style number-dates with numeric months (24. 12. 2016)
 - **1.5.3** added support for European-style number-dates and for months (24. Dez. 2016)
 - **1.5.2** fixed a tokenizer bug when parsing URLs ending with root paths (``/``), prevented sentence splitting after U.K., U.S. and E.U. if followed by upper-case ("U.S. Air Force"), added missing Unicode hyphens and apostrophes, and added test suite setup instructions
