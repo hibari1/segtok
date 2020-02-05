@@ -196,6 +196,9 @@ MAY_CROSS_ONE_LINE = _compile(2)
 "A segmentation pattern where two or more newline chars also terminate sentences."
 
 
+# nach dem 50. ; ab dem 35.
+FROM_AFTER_YEAR_DE = compile(r'[ab|nach] dem \d{1,2}\.', UNICODE)
+
 def split_single(text, join_on_lowercase=False, short_sentence_length=SHORT_SENTENCE_LENGTH):
     """
     Default: split `text` at sentence terminals and at newline chars.
@@ -274,9 +277,14 @@ def _sentences(spans, join_on_lowercase, short_sentence_length):
                 )
             ):
                 last = '%s%s' % (last, current)
+#            elif shorterThanATypicalSentence(len(current), len(last)) and _is_open(last, '[]') and (
+#                _is_not_opened(current, '[]') or last.endswith(' et al. ') or (
+#                    UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current)
+#                )
+#            ):
             elif shorterThanATypicalSentence(len(current), len(last)) and _is_open(last, '[]') and (
                 _is_not_opened(current, '[]') or last.endswith(' et al. ') or (
-                    UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current)
+                    UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current) or last == FROM_AFTER_YEAR_DE
                 )
             ):
                 last = '%s%s' % (last, current)
