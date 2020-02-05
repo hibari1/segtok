@@ -11,7 +11,7 @@ from segtok.segmenter import split_single
         => potential addition to segtok/segmenter.py list
 """
 
-din = '/charming/marcin/data/UpdateMe/manz/segmentation/annotationen-reiter-txt-clean_and_manual_check'
+din = '/charming/marcin/charming_raid/1Projects/Maia/data/Aufklaerungsboegen/txt/test'
 extension = '.txt'
 
 # get files

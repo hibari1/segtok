@@ -32,8 +32,9 @@ from regex import compile, DOTALL, UNICODE, VERBOSE
 
 __author__ = 'Florian Leitner <florian.leitner@gmail.com>'
 
-SENTENCE_TERMINALS = '.!?\u203C\u203D\u2047\u2048\u2049\u3002' \
-                     '\uFE52\uFE57\uFF01\uFF0E\uFF1F\uFF61'
+SENTENCE_TERMINALS = (
+    '.!?\u203C\u203D\u2047\u2048\u2049\u3002' '\uFE52\uFE57\uFF01\uFF0E\uFF1F\uFF61'
+)
 "The list of valid Unicode sentence terminal characters."
 
 # Note that Unicode the category Pd is NOT a good set for valid word-breaking hyphens,
@@ -62,7 +63,8 @@ E\.U U\.K U\.S
 """.split()
 ABBREVIATIONS.extend(a.capitalize() for a in ABBREVIATIONS if a[0].islower())
 ABBREVIATIONS = '|'.join(sorted(ABBREVIATIONS))
-ABBREVIATIONS = compile(r"""
+ABBREVIATIONS = compile(
+    r"""
 (?: \b(?:%s) # 1. known abbreviations,
 |   ^\S      # 2. a single, non-space character "sentence" (only),
 |   ^\d+     # 3. a series of digits "sentence" (only), or
@@ -86,7 +88,10 @@ ABBREVIATIONS = compile(r"""
         [\p{Lu}\p{Lt}] \p{Lm}? \. # optional A.
         [%s]?                     # optional hyphen
     )? [\p{Lu}\p{Lt}] \p{Lm}?     # required A
-) $""" % (ABBREVIATIONS, HYPHENS), UNICODE | VERBOSE)
+) $"""
+    % (ABBREVIATIONS, HYPHENS),
+    UNICODE | VERBOSE,
+)
 """
 Common abbreviations at the candidate sentence end that normally don't terminate a sentence.
 Note that a check is required to ensure the potential abbreviation is actually followed by a dot
@@ -115,12 +120,15 @@ and not some other sentence segmentation marker.
 # whether
 
 ENDS_IN_DATE_DIGITS = compile(r"\b[0123]?[0-9]$")
-MONTH = compile(r"(J[äa]n|Ene|Feb|M[äa]r|A[pb]r|May|Jun|Jul|Aug|Sep|O[ck]t|Nov|D[ei][cz]|0?[1-9]|1[012])")
+MONTH = compile(
+    r"(J[äa]n|Ene|Feb|M[äa]r|A[pb]r|May|Jun|Jul|Aug|Sep|O[ck]t|Nov|D[ei][cz]|0?[1-9]|1[012])"
+)
 """
 Special facilities to detect European-style dates.
 """
 
-CONTINUATIONS = compile(r""" ^ # at string start only
+CONTINUATIONS = compile(
+    r""" ^ # at string start only
 (?: a(?: nd|re )
 |   b(?: etween|y )
 |   from
@@ -130,15 +138,20 @@ CONTINUATIONS = compile(r""" ^ # at string start only
 |   t(?: han|hat|hrough )
 |   via
 |   w(?: as|ere|hether|ith )
-)\b""", UNICODE | VERBOSE)
+)\b""",
+    UNICODE | VERBOSE,
+)
 "Lower-case words that in the given form usually don't start a sentence."
 
-BEFORE_LOWER = compile(r""" .*?
+BEFORE_LOWER = compile(
+    r""" .*?
 (?: [%s]"[\)\]]*           # ."]) .") ."
 |   [%s] [\)\]]+           # .]) .)
 |   \b spp \.              # spp.  (species pluralis)
 |   \b \p{L} \p{Ll}? \.    # Ll. L.
-) \s+ $""" % (SENTENCE_TERMINALS, SENTENCE_TERMINALS), DOTALL | UNICODE | VERBOSE
+) \s+ $"""
+    % (SENTENCE_TERMINALS, SENTENCE_TERMINALS),
+    DOTALL | UNICODE | VERBOSE,
 )
 """
 Endings that, if followed by a lower-case word, are not sentence terminals:
@@ -146,6 +159,10 @@ Endings that, if followed by a lower-case word, are not sentence terminals:
 - dotted abbreviations (U.S.A. was)
 - genus-species-like (m. musculus)
 """
+
+# nach dem 50. ; ab dem 35.
+FROM_AFTER_YEAR_DE = compile(r'[ab|nach] dem \d{1,2}', UNICODE)
+
 LOWER_WORD = compile(r'^\p{Ll}+[%s]?\p{Ll}*\b' % HYPHENS, UNICODE)
 "Lower-case words are not sentence starters (after an abbreviation)."
 
@@ -170,7 +187,8 @@ SHORT_SENTENCE_LENGTH = 55
 NON_UNIX_LINEBREAK = compile(r'(?:\r\n|\r|\u2028)', UNICODE)
 "All linebreak sequence variants except the Unix newline (only)."
 
-SEGMENTER_REGEX = r"""
+SEGMENTER_REGEX = (
+    r"""
 (                       # A sentence ends at one of two sequences:
     [%s]                # Either, a sequence starting with a sentence terminal,
     [\'\u2019\"\u201D]? # an optional right quote,
@@ -178,7 +196,9 @@ SEGMENTER_REGEX = r"""
     \s+                 # a sequence of required spaces.
 |                       # Otherwise,
     \n{{{},}}           # a sentence also terminates at [consecutive] newlines.
-)""" % SENTENCE_TERMINALS
+)"""
+    % SENTENCE_TERMINALS
+)
 """
 Sentence end a sentence terminal, followed by spaces.
 Optionally, a right quote and any number of closing brackets may succeed the terminal marker.
@@ -196,15 +216,14 @@ MAY_CROSS_ONE_LINE = _compile(2)
 "A segmentation pattern where two or more newline chars also terminate sentences."
 
 
-# nach dem 50. ; ab dem 35.
-FROM_AFTER_YEAR_DE = compile(r'[ab|nach] dem \d{1,2}\.', UNICODE)
-
 def split_single(text, join_on_lowercase=False, short_sentence_length=SHORT_SENTENCE_LENGTH):
     """
     Default: split `text` at sentence terminals and at newline chars.
     """
     sentences = _sentences(DO_NOT_CROSS_LINES.split(text), join_on_lowercase, short_sentence_length)
-    return [s for ss in sentences  for s in ss.split('\n')]
+    for s in sentences:
+        print(s)
+    return [s for ss in sentences for s in ss.split('\n')]
 
 
 def split_multi(text, join_on_lowercase=False, short_sentence_length=SHORT_SENTENCE_LENGTH):
@@ -227,8 +246,9 @@ def split_newline(text):
             yield line
 
 
-def rewrite_line_separators(text, pattern, join_on_lowercase=False,
-                            short_sentence_length=SHORT_SENTENCE_LENGTH):
+def rewrite_line_separators(
+    text, pattern, join_on_lowercase=False, short_sentence_length=SHORT_SENTENCE_LENGTH
+):
     """
     Remove line separator chars inside sentences and ensure there is a ``\\n`` at their end.
 
@@ -265,26 +285,30 @@ def to_unix_linebreaks(text):
 def _sentences(spans, join_on_lowercase, short_sentence_length):
     """Join spans back together into sentences as necessary."""
     last = None
-    shorterThanATypicalSentence = lambda c, l: c < short_sentence_length or l < short_sentence_length
-
+    shorterThanATypicalSentence = (
+        lambda c, l: c < short_sentence_length or l < short_sentence_length
+    )
     for current in _abbreviation_joiner(spans):
         if last is not None:
             if (join_on_lowercase or BEFORE_LOWER.match(last)) and LOWER_WORD.match(current):
                 last = '%s%s' % (last, current)
-            elif shorterThanATypicalSentence(len(current), len(last)) and _is_open(last) and (
-                _is_not_opened(current) or last.endswith(' et al. ') or (
-                    UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current)
+            elif (
+                shorterThanATypicalSentence(len(current), len(last))
+                and _is_open(last)
+                and (
+                    _is_not_opened(current)
+                    or last.endswith(' et al. ')
+                    or (UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current))
                 )
             ):
                 last = '%s%s' % (last, current)
-#            elif shorterThanATypicalSentence(len(current), len(last)) and _is_open(last, '[]') and (
-#                _is_not_opened(current, '[]') or last.endswith(' et al. ') or (
-#                    UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current)
-#                )
-#            ):
-            elif shorterThanATypicalSentence(len(current), len(last)) and _is_open(last, '[]') and (
-                _is_not_opened(current, '[]') or last.endswith(' et al. ') or (
-                    UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current) or last == FROM_AFTER_YEAR_DE
+            elif (
+                shorterThanATypicalSentence(len(current), len(last))
+                and _is_open(last, '[]')
+                and (
+                    _is_not_opened(current, '[]')
+                    or last.endswith(' et al. ')
+                    or (UPPER_CASE_END.search(last) and UPPER_CASE_START.match(current))
                 )
             ):
                 last = '%s%s' % (last, current)
@@ -310,18 +334,24 @@ def _abbreviation_joiner(spans):
         if pos and pos % 2:  # even => segment, uneven => (potential) terminal
             prev_s = spans[pos - 1]
             marker = spans[pos]
-            next_s = spans[pos+1] if pos + 1 < total else None
+            next_s = spans[pos + 1] if pos + 1 < total else None
 
             if prev_s[-1:].isspace():
-                pass # join
+                pass  # join
             elif marker[0] == '.' and ABBREVIATIONS.search(prev_s):
-                pass # join
-            elif marker[0] == '.' and next_s and (
-                    LONE_WORD.match(next_s) or
-                    (ENDS_IN_DATE_DIGITS.search(prev_s) and MONTH.match(next_s)) or
-                    (MIDDLE_INITIAL_END.search(prev_s) and UPPER_WORD_START.match(next_s))
-                    ):
-                pass # join
+                pass  # join
+            elif (
+                marker[0] == '.'
+                and next_s
+                and (
+                    LONE_WORD.match(next_s)
+                    or (ENDS_IN_DATE_DIGITS.search(prev_s) and MONTH.match(next_s))
+                    or (MIDDLE_INITIAL_END.search(prev_s) and UPPER_WORD_START.match(next_s))
+                )
+            ):
+                pass  # join
+            elif marker[0] == '.' and next_s and (FROM_AFTER_YEAR_DE.search(prev_s)):
+                pass  # join
             else:
                 yield makeSentence(segment, pos + 1)
                 segment = None
@@ -402,32 +432,50 @@ def main():
 
     single, multi = 0, 1
 
-    parser = ArgumentParser(usage='%(prog)s [--mode] [FILE ...]',
-                            description=__doc__, prog=path.basename(argv[0]),
-                            epilog='default encoding: ' + getdefaultencoding())
-    parser.add_argument('files', metavar='FILE', nargs='*',
-                        help='UTF-8 plain-text file(s); if absent, read from STDIN')
-    parser.add_argument('--with-ids', action='store_true',
-                        help='STDIN (only!) input is ID-tab-TEXT; the ID is '
-                             'preserved in the output as ID-tab-N-tab-SENTENCE '
-                             'where N is the incremental sentence number for that '
-                             'text ID')
-    parser.add_argument('--normal-breaks', '-n', action='store_true',
-                        help=to_unix_linebreaks.__doc__)
-    parser.add_argument('--bracket-spans', '-b', metavar="INT", type=int,
-                        default=SHORT_SENTENCE_LENGTH,
-                        help="upper boundary for text spans that are not split "
-                             "into sentences inside brackets [%(default)d]")
+    parser = ArgumentParser(
+        usage='%(prog)s [--mode] [FILE ...]',
+        description=__doc__,
+        prog=path.basename(argv[0]),
+        epilog='default encoding: ' + getdefaultencoding(),
+    )
+    parser.add_argument(
+        'files',
+        metavar='FILE',
+        nargs='*',
+        help='UTF-8 plain-text file(s); if absent, read from STDIN',
+    )
+    parser.add_argument(
+        '--with-ids',
+        action='store_true',
+        help='STDIN (only!) input is ID-tab-TEXT; the ID is '
+        'preserved in the output as ID-tab-N-tab-SENTENCE '
+        'where N is the incremental sentence number for that '
+        'text ID',
+    )
+    parser.add_argument(
+        '--normal-breaks', '-n', action='store_true', help=to_unix_linebreaks.__doc__
+    )
+    parser.add_argument(
+        '--bracket-spans',
+        '-b',
+        metavar="INT",
+        type=int,
+        default=SHORT_SENTENCE_LENGTH,
+        help="upper boundary for text spans that are not split "
+        "into sentences inside brackets [%(default)d]",
+    )
     parser.add_argument('--encoding', '-e', help='force another encoding to use')
     mode = parser.add_mutually_exclusive_group()
     parser.set_defaults(mode=single)
-    mode.add_argument('--single', '-s', action='store_const', dest='mode', const=single,
-                      help=split_single.__doc__)
-    mode.add_argument('--multi', '-m', action='store_const', dest='mode', const=multi,
-                      help=split_multi.__doc__)
+    mode.add_argument(
+        '--single', '-s', action='store_const', dest='mode', const=single, help=split_single.__doc__
+    )
+    mode.add_argument(
+        '--multi', '-m', action='store_const', dest='mode', const=multi, help=split_multi.__doc__
+    )
 
     args = parser.parse_args()
-    pattern = [DO_NOT_CROSS_LINES, MAY_CROSS_ONE_LINE, ][args.mode]
+    pattern = [DO_NOT_CROSS_LINES, MAY_CROSS_ONE_LINE,][args.mode]
     normal = to_unix_linebreaks if args.normal_breaks else lambda t: t
 
     # fix broken Unicode handling in Python 2.x
@@ -437,21 +485,16 @@ def main():
             stdout = stdout.buffer
             stdin = stdin.buffer
 
-        stdout = codecs.getwriter(
-            args.encoding or 'utf-8'
-        )(stdout, 'xmlcharrefreplace')
+        stdout = codecs.getwriter(args.encoding or 'utf-8')(stdout, 'xmlcharrefreplace')
 
-        stdin = codecs.getreader(
-            args.encoding or 'utf-8'
-        )(stdin, 'xmlcharrefreplace')
+        stdin = codecs.getreader(args.encoding or 'utf-8')(stdin, 'xmlcharrefreplace')
 
         if not args.encoding:
             stderr.write('wrapped segmenter stdio with UTF-8 de/encoders')
             stderr.write(linesep)
 
     if not args.files and args.mode != single:
-        parser.error('only single line splitting mode allowed '
-                     'when reading from STDIN')
+        parser.error('only single line splitting mode allowed ' 'when reading from STDIN')
 
     def segment(text):
         if not args.files and args.with_ids:
@@ -468,6 +511,7 @@ def main():
             )
 
         if tid is not None:
+
             def write_ids(tid, sid):
                 stdout.write(tid)
                 stdout.write('\t')
@@ -492,9 +536,7 @@ def main():
 
     if args.files:
         for txt_file_path in args.files:
-            with codecs.open(
-                txt_file_path, 'r', encoding=(args.encoding or 'utf-8')
-            ) as fp:
+            with codecs.open(txt_file_path, 'r', encoding=(args.encoding or 'utf-8')) as fp:
                 segment(fp.read())
     else:
         for line in stdin:
