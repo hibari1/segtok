@@ -221,8 +221,6 @@ def split_single(text, join_on_lowercase=False, short_sentence_length=SHORT_SENT
     Default: split `text` at sentence terminals and at newline chars.
     """
     sentences = _sentences(DO_NOT_CROSS_LINES.split(text), join_on_lowercase, short_sentence_length)
-    for s in sentences:
-        print(s)
     return [s for ss in sentences for s in ss.split('\n')]
 
 
